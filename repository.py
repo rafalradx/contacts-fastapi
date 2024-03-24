@@ -7,30 +7,24 @@ class ContactRepository(AbstractContactRepository):
     def __init__(self, session):
         self._session = session
 
-    def get_note(self, id) -> ContactOut:
-        note = self._session.get(Contact, id)
-        return ContactOut(
-            name=note.name, description=note.description, done=note.done, id=note.id
-        )
+    def get_contact(self, id) -> ContactOut:
+        contact = self._session.get(Contact, id)
+        return ContactOut(**contact.to_dict())
 
-    def get_notes(self) -> list[ContactIn]:
+    def get_contacts(self) -> list[ContactIn]:
         return [
-            ContactOut(
-                name=note.name, description=note.description, done=note.done, id=note.id
-            )
-            for note in self._session.query(Contact).all()
+            ContactOut(**contact.to_dict())
+            for contact in self._session.query(Contact).all()
         ]
 
-    def create_note(self, note: ContactIn) -> ContactOut:
-        note = Contact(name=note.name, description=note.description, done=note.done)
-        self._session.add(note)
+    def create_contact(self, contact: ContactIn) -> ContactOut:
+        contact = Contact(**contact.model_dump())
+        self._session.add(contact)
         self._session.commit()
-        self._session.refresh(note)
-        return ContactOut(
-            name=note.name, description=note.description, done=note.done, id=note.id
-        )
+        self._session.refresh(contact)  # contact gets id
+        return ContactOut(**contact.to_dict())
 
-    def delete_note(self, id: int):
+    def delete_contact(self, id: int):
         contact = self._session.get(Contact, id)
         self._session.delete(contact)
         return ContactOut()

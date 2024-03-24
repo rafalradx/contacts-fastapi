@@ -10,12 +10,20 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-class Contact(Base):
+class MyBase(Base):
+    __abstract__ = True
+
+    def to_dict(self):
+        return {field.name: getattr(self, field.name) for field in self.__table__.c}
+
+
+class Contact(MyBase):
     __tablename__ = "contacts"
     id = Column(Integer, primary_key=True, index=True)
-    firstname = Column(String(50))
-    lastname = Column(String(50))
+    first_name = Column(String(50))
+    last_name = Column(String(50))
     email = Column(String(50))
+    phone_number = Column(String(15))
     birth_date = Column(Date)
     additional_data = Column(JSON, nullable=True)
 

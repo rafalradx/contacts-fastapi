@@ -5,10 +5,10 @@ name = "pypi"
 
 [packages]
 sqlalchemy = "*"
-pydantic = "*"
 fastapi = "*"
 uvicorn = "*"
 psycopg2-binary = "*"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 

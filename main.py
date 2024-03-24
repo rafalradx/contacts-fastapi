@@ -9,29 +9,29 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.get("/notes/{note_id}")
-async def read_note(
-    note_id: int = Path(description="The ID of note to be acquired."),
-    note_repository: AbstractContactRepository = Depends(get_repository),
+@app.get("/contacts/{contact_id}")
+async def read_contact(
+    contact_id: int = Path(description="The ID of note to be acquired."),
+    contact_repository: AbstractContactRepository = Depends(get_repository),
 ) -> ContactOut:
-    note = note_repository.get_note(note_id)
-    if not note:
+    contact = contact_repository.get_contact(contact_id)
+    if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return note
+    return contact
 
 
-@app.get("/notes")
-async def read_notes(
+@app.get("/contacts")
+async def read_contacts(
     note_repository: AbstractContactRepository = Depends(get_repository),
 ) -> list[ContactOut]:
-    notes = note_repository.get_notes()
+    notes = note_repository.get_contacts()
     return notes
 
 
-@app.post("/notes", status_code=status.HTTP_201_CREATED)
-async def create_note(
+@app.post("/contacts", status_code=status.HTTP_201_CREATED)
+async def create_contact(
     note: ContactIn,
     note_repository: AbstractContactRepository = Depends(get_repository),
 ):
-    new_note = note_repository.create_note(note)
+    new_note = note_repository.create_contact(note)
     return new_note
