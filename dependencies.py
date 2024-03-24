@@ -1,7 +1,7 @@
-from abstract_repository import AbstractNoteRepository
+from abstract_repository import AbstractContactRepository
 from db import SessionLocal
-from repository import NoteRepository
+from repository import ContactRepository
 
 
-def get_repository() -> AbstractNoteRepository:
-    return NoteRepository(SessionLocal())
+def get_repository() -> AbstractContactRepository:
+    return ContactRepository(SessionLocal())

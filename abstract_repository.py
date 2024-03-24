@@ -1,18 +1,14 @@
-import abc
+from abc import ABC, abstractmethod
+from models import ContactIn, ContactOut
 
-from models import NoteIn, NoteOut
 
+class AbstractContactRepository(ABC):
 
-class AbstractNoteRepository(abc.ABC):
+    @abstractmethod
+    def get_note(self, id) -> ContactOut: ...
 
-    @abc.abstractmethod
-    def get_note(self, id) -> NoteOut:
-        ...
+    @abstractmethod
+    def get_notes(self) -> list[ContactOut]: ...
 
-    @abc.abstractmethod
-    def get_notes(self) -> list[NoteOut]:
-        ...
-
-    @abc.abstractmethod
-    def create_note(self, note: NoteIn) -> NoteOut:
-        ...
+    @abstractmethod
+    def create_note(self, contact: ContactIn) -> ContactOut: ...
