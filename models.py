@@ -9,7 +9,7 @@ class ContactIn(BaseModel):
     email: EmailStr
     phone_number: str
     birth_date: PastDate
-    additional_data: Optional[Dict[str, str]] = None
+    additional_data: Optional[Dict[str, str]]
 
     @field_validator("phone_number")
     @classmethod

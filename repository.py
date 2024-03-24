@@ -9,6 +9,8 @@ class ContactRepository(AbstractContactRepository):
 
     def get_contact(self, id) -> ContactOut:
         contact = self._session.get(Contact, id)
+        if not contact:
+            return None
         return ContactOut(**contact.to_dict())
 
     def get_contacts(self) -> list[ContactIn]:
@@ -24,10 +26,27 @@ class ContactRepository(AbstractContactRepository):
         self._session.refresh(contact)  # contact gets id
         return ContactOut(**contact.to_dict())
 
-    def delete_contact(self, id: int):
+    def delete_contact(self, id: int) -> ContactOut:
         contact = self._session.get(Contact, id)
+        if not contact:
+            return None
         self._session.delete(contact)
-        return ContactOut()
+        self._session.commit()
+        return ContactOut(**contact.to_dict())
+
+    def update_contact(self, id: int, new_content: ContactIn) -> ContactOut:
+        contact = self._session.get(Contact, id)
+        if not contact:
+            return None
+        contact.first_name = new_content.first_name
+        contact.last_name = new_content.last_name
+        contact.email = new_content.email
+        contact.birth_date = new_content.birth_date
+        contact.phone_number = new_content.phone_number
+        contact.additional_data = new_content.additional_data
+        self._session.add(contact)
+        self._session.commit()
+        return ContactOut(**contact.to_dict())
 
 
 # class MongoContactRepository(AbstractContactRepository):

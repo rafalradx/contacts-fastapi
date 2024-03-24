@@ -12,3 +12,9 @@ class AbstractContactRepository(ABC):
 
     @abstractmethod
     def create_contact(self, contact: ContactIn) -> ContactOut: ...
+
+    @abstractmethod
+    def delete_contact(self, id) -> ContactOut: ...
+
+    @abstractmethod
+    def update_contact(self, id, contact: ContactIn) -> ContactOut: ...
