@@ -1,6 +1,7 @@
 from abstract_repository import AbstractContactRepository
 from db import Contact
 from models import ContactIn, ContactOut
+from datetime import date, timedelta
 
 
 class ContactRepository(AbstractContactRepository):
@@ -55,3 +56,48 @@ class ContactRepository(AbstractContactRepository):
         self._session.add(contact)
         self._session.commit()
         return ContactOut(**contact.to_dict())
+
+    def get_upcoming_birthdays(self) -> list[ContactIn]:
+        today = date.today()
+        end_date = today + timedelta(days=7)
+        contacts_with_birthdays = []
+        contacts = self._session.query(Contact).all()
+        if today.year == end_date.year:
+            for contact in contacts:
+                dt = (
+                    date(
+                        year=today.year,
+                        month=contact.birth_date.month,
+                        day=contact.birth_date.day,
+                    )
+                    - today
+                )
+                if dt.days <= 7 and dt.days >= 0:
+                    contacts_with_birthdays.append(contact)
+        else:
+            for contact in contacts:
+                dt = (
+                    date(
+                        year=today.year,
+                        month=contact.birth_date.month,
+                        day=contact.birth_date.day,
+                    )
+                    - today
+                )
+                if dt.days <= 7 and dt.days >= 0:
+                    contacts_with_birthdays.append(contact)
+                elif dt.days < 0:
+                    dt = (
+                        date(
+                            year=today.year + 1,
+                            month=contact.birth_date.month,
+                            day=contact.birth_date.day,
+                        )
+                        - today
+                    )
+                    if dt.days <= 7:
+                        contacts_with_birthdays.append(contact)
+
+        if not contacts_with_birthdays:
+            return None
+        return [ContactOut(**contact.to_dict()) for contact in contacts_with_birthdays]

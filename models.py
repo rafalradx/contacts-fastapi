@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, PastDate, field_validator
-from typing import Optional, Dict
+from typing import Optional
 import re
 
 
@@ -9,7 +9,7 @@ class ContactIn(BaseModel):
     email: EmailStr
     phone_number: str
     birth_date: PastDate
-    additional_data: Optional[Dict[str, str]]
+    additional_data: Optional[dict[str, str]] = None
 
     @field_validator("phone_number")
     @classmethod

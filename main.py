@@ -29,6 +29,14 @@ async def read_contacts(
     return contacts
 
 
+@app.get("/contacts/birthdays/", status_code=status.HTTP_200_OK)
+async def read_upcoming_birthdays(
+    contact_repository: AbstractContactRepository = Depends(get_repository),
+) -> list[ContactOut]:
+    contacts = contact_repository.get_upcoming_birthdays()
+    return contacts
+
+
 @app.post("/contacts/", status_code=status.HTTP_201_CREATED)
 async def create_contact(
     contact: ContactIn,
