@@ -31,7 +31,7 @@ class ContactRepository(AbstractContactRepository):
         contact = Contact(**contact.model_dump())
         self._session.add(contact)
         self._session.commit()
-        self._session.refresh(contact)  # contact gets id
+        self._session.refresh(contact)
         return ContactOut(**contact.to_dict())
 
     def delete_contact(self, id: int) -> ContactOut:
@@ -55,23 +55,3 @@ class ContactRepository(AbstractContactRepository):
         self._session.add(contact)
         self._session.commit()
         return ContactOut(**contact.to_dict())
-
-
-# class MongoContactRepository(AbstractContactRepository):
-#     def __init__(self, session):
-#         self._session = session
-
-#     def get_note(self, id) -> NoteOut:
-#         # Tutaj logika pozyskująca dane z mongoengine
-#         # return NoteOut(name=note.name, description=note.description, done=note.done, id=note.id)
-#         ...
-
-#     def get_notes(self) -> list[NoteOut]:
-#         # Tutaj logika pozyskująca dane z mongoengine
-#         # return [NoteOut(name=note.name, description=note.description, done=note.done, id=note.id) for note in self._session.query(Note).all()]
-#         ...
-
-#     def create_note(self, note: NoteIn) -> NoteOut:
-#         # Tutaj logika pozyskująca dane z mongoengine
-#         # return NoteOut(name=note.name, description=note.description, done=note.done, id=note.id)
-#         ...
