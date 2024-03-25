@@ -13,7 +13,15 @@ class ContactRepository(AbstractContactRepository):
             return None
         return ContactOut(**contact.to_dict())
 
-    def get_contacts(self) -> list[ContactIn]:
+    def get_contacts(self, query) -> list[ContactIn]:
+        query = {field: value for field, value in query.items() if value is not None}
+
+        if query:
+            return [
+                ContactOut(**contact.to_dict())
+                for contact in self._session.query(Contact).filter_by(**query)
+            ]
+
         return [
             ContactOut(**contact.to_dict())
             for contact in self._session.query(Contact).all()

@@ -1,6 +1,4 @@
-from fastapi import FastAPI, Path, Depends, HTTPException, status
-from fastapi.staticfiles import StaticFiles
-
+from fastapi import FastAPI, Path, Depends, HTTPException, status, Query
 from abstract_repository import AbstractContactRepository
 from dependencies import get_repository
 from models import ContactOut, ContactIn
@@ -8,7 +6,7 @@ from models import ContactOut, ContactIn
 app = FastAPI()
 
 
-@app.get("/contacts/{contact_id}")
+@app.get("/contacts/{contact_id}", status_code=status.HTTP_200_OK)
 async def read_contact(
     contact_id: int = Path(description="The ID of contact to be acquired."),
     contact_repository: AbstractContactRepository = Depends(get_repository),
@@ -19,15 +17,19 @@ async def read_contact(
     return contact
 
 
-@app.get("/contacts")
+@app.get("/contacts/", status_code=status.HTTP_200_OK)
 async def read_contacts(
+    first_name: str | None = Query(default=None, max_length=50),
+    last_name: str | None = Query(default=None, max_length=50),
+    email: str | None = Query(default=None, max_length=50),
     contact_repository: AbstractContactRepository = Depends(get_repository),
 ) -> list[ContactOut]:
-    contacts = contact_repository.get_contacts()
+    query = {"first_name": first_name, "last_name": last_name, "email": email}
+    contacts = contact_repository.get_contacts(query)
     return contacts
 
 
-@app.post("/contacts", status_code=status.HTTP_201_CREATED)
+@app.post("/contacts/", status_code=status.HTTP_201_CREATED)
 async def create_contact(
     contact: ContactIn,
     contact_repository: AbstractContactRepository = Depends(get_repository),
@@ -36,7 +38,7 @@ async def create_contact(
     return new_contact
 
 
-@app.delete("/contacts{contact_id}", status_code=status.HTTP_200_OK)
+@app.delete("/contacts/{contact_id}", status_code=status.HTTP_200_OK)
 async def remove_contact(
     contact_id: int = Path(description="The ID of contact to be removed."),
     contact_repository: AbstractContactRepository = Depends(get_repository),
@@ -47,7 +49,7 @@ async def remove_contact(
     return contact
 
 
-@app.put("/contacts{contact_id}", status_code=status.HTTP_200_OK)
+@app.put("/contacts/{contact_id}", status_code=status.HTTP_200_OK)
 async def update_contact(
     contact: ContactIn,
     contact_id: int = Path(description="The ID of contact to be updated."),
