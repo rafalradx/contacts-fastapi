@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Path, Depends, HTTPException, status, Query
-from abstract_repository import AbstractContactRepository
+from src.repository.abstract import AbstractContactRepository
 from dependencies import get_repository
-from models import ContactOut, ContactIn
+from src.schemas.contacts import ContactOut, ContactIn
 
 app = FastAPI()
 

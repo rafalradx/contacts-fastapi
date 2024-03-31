@@ -1,6 +1,6 @@
-from abstract_repository import AbstractContactRepository
-from db import SessionLocal
-from repository import ContactRepository
+from src.repository.abstract import AbstractContactRepository
+from src.database.db import SessionLocal
+from src.repository.contacts import ContactRepository
 
 
 def get_repository() -> AbstractContactRepository:

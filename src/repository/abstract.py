@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from models import ContactIn, ContactOut
+from src.schemas.contacts import ContactIn, ContactOut
 
 
 class AbstractContactRepository(ABC):

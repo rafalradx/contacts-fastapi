@@ -1,6 +1,6 @@
-from abstract_repository import AbstractContactRepository
-from db import Contact
-from models import ContactIn, ContactOut
+from src.repository.abstract import AbstractContactRepository
+from src.database.db import Contact
+from src.schemas.contacts import ContactIn, ContactOut
 from datetime import date, timedelta
 
 
