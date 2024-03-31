@@ -11,6 +11,7 @@ psycopg2-binary = "~=2.9"
 pydantic = {extras = ["email"], version = "~=2.1"}
 python-dotenv = "*"
 alembic = "*"
+pydantic-settings = "*"
 
 [dev-packages]
 

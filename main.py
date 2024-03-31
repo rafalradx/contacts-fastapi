@@ -34,6 +34,8 @@ async def read_upcoming_birthdays(
     contact_repository: AbstractContactRepository = Depends(get_repository),
 ) -> list[ContactOut]:
     contacts = contact_repository.get_upcoming_birthdays()
+    if not contacts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return contacts
 
 
