@@ -12,6 +12,12 @@ pydantic = {extras = ["email"], version = "~=2.1"}
 python-dotenv = "*"
 alembic = "*"
 pydantic-settings = "*"
+redis = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "*"}
+python-multipart = "*"
+libgravatar = "*"
+fastapi-mail = "*"
 
 [dev-packages]
 

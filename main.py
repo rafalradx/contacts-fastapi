@@ -1,9 +1,8 @@
-from fastapi import FastAPI, Path, Depends, HTTPException, status, Query
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from src.repository.abstract import AbstractContactRepository
-from src.schemas.contacts import ContactOut, ContactIn
-from src.routes import contacts
+
+from src.routes import contacts, auth
 import os
 
 app = FastAPI()
@@ -11,6 +10,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(contacts.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
 
 
 @app.get("/")

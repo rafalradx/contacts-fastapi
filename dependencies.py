@@ -3,5 +3,5 @@ from src.database.db import SessionLocal
 from src.repository.contacts import ContactRepository
 
 
-def get_repository() -> AbstractContactRepository:
+def get_contacts_repository() -> AbstractContactRepository:
     return ContactRepository(SessionLocal())
