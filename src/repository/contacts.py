@@ -1,50 +1,71 @@
 from src.repository.abstract import AbstractContactRepository
 from src.database.models import Contact
 from src.schemas.contacts import ContactIn, ContactOut
+from src.schemas.users import UserOut
 from datetime import date, timedelta
+from sqlalchemy.orm import Session
 
 
 class ContactRepository(AbstractContactRepository):
-    def __init__(self, session):
-        self._session = session
+    def __init__(self, db_session: Session):
+        self._session = db_session
 
-    def get_contact(self, id) -> ContactOut:
-        contact = self._session.get(Contact, id)
+    async def get_contact(self, id: int, user: UserOut) -> ContactOut:
+        contact = (
+            await self._session.query(Contact)
+            .filter(Contact.user_id == user.id, Contact.id == id)
+            .first()
+        )
         if not contact:
             return None
         return ContactOut(**contact.to_dict())
 
-    def get_contacts(self, query) -> list[ContactIn]:
+    async def get_contacts(self, query, user: UserOut) -> list[ContactIn]:
         query = {field: value for field, value in query.items() if value is not None}
 
         if query:
             return [
                 ContactOut(**contact.to_dict())
-                for contact in self._session.query(Contact).filter_by(**query)
+                for contact in self._session.query(Contact)
+                .filter(Contact.user_id == user.id)
+                .filter_by(**query)
+                .all()
             ]
 
         return [
             ContactOut(**contact.to_dict())
-            for contact in self._session.query(Contact).all()
+            for contact in self._session.query(Contact)
+            .filter(Contact.user_id == user.id)
+            .all()
         ]
 
-    def create_contact(self, contact: ContactIn) -> ContactOut:
-        contact = Contact(**contact.model_dump())
+    async def create_contact(self, new_contact: ContactIn, user: UserOut) -> ContactOut:
+        contact = Contact(**new_contact.model_dump(), user_id=user.id)
         self._session.add(contact)
         self._session.commit()
         self._session.refresh(contact)
         return ContactOut(**contact.to_dict())
 
-    def delete_contact(self, id: int) -> ContactOut:
-        contact = self._session.get(Contact, id)
+    async def delete_contact(self, id: int, user: UserOut) -> ContactOut:
+        contact = (
+            await self._session.query(Contact)
+            .filter(Contact.user_id == user.id, Contact.id == id)
+            .first()
+        )
         if not contact:
             return None
         self._session.delete(contact)
         self._session.commit()
         return ContactOut(**contact.to_dict())
 
-    def update_contact(self, id: int, new_content: ContactIn) -> ContactOut:
-        contact = self._session.get(Contact, id)
+    async def update_contact(
+        self, id: int, new_content: ContactIn, user: UserOut
+    ) -> ContactOut:
+        contact = (
+            await self._session.query(Contact)
+            .filter(Contact.user_id == user.id, Contact.id == id)
+            .first()
+        )
         if not contact:
             return None
         contact.first_name = new_content.first_name
@@ -57,11 +78,13 @@ class ContactRepository(AbstractContactRepository):
         self._session.commit()
         return ContactOut(**contact.to_dict())
 
-    def get_upcoming_birthdays(self) -> list[ContactIn]:
+    async def get_upcoming_birthdays(self, user: UserOut) -> list[ContactIn]:
         today = date.today()
         end_date = today + timedelta(days=7)
         contacts_with_birthdays = []
-        contacts = self._session.query(Contact).all()
+        contacts = (
+            await self._session.query(Contact).filter(Contact.user_id == user.id).all()
+        )
         if today.year == end_date.year:
             for contact in contacts:
                 dt = (
