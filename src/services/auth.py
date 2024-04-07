@@ -1,11 +1,9 @@
 from typing import Optional
-
 import redis as redis
 import pickle
 from jose import JWTError, jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
@@ -14,22 +12,17 @@ from src.database.db import get_db
 from src.repository import users as repository_users
 from src.schemas.users import UserOut
 
+from abc import ABC, abstractmethod
+
 # ATTENTION!!! bcrypt warning due to passlib which attempts to read a bcrypt version (for logging only)
 # passlib seems to be abandoned - considering removing it
 
 
 class Auth:
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = settings.jwt_secret_key
     ALGORITHM = settings.jwt_algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     # r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
-
-    def verify_password(self, plain_password, hashed_password):
-        return self.pwd_context.verify(plain_password, hashed_password)
-
-    def get_password_hash(self, password: str):
-        return self.pwd_context.hash(password)
 
     # define a function to generate a new access token
     async def create_access_token(

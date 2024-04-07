@@ -6,12 +6,13 @@ from fastapi.security import (
 )
 from fastapi.requests import Request
 from src.repository.abstract import AbstractUserRepository
-from dependencies import get_users_repository
+from dependencies import get_users_repository, get_password_handler
 
 from src.schemas.users import UserIn, UserOut, Token, RequestEmail
 
 # from src.repository import users as users_repository
 from src.services.auth import auth_service
+from src.services.pwd_handler import AbstractPasswordHashHandler
 
 # from src.services.email import send_email
 
@@ -25,13 +26,14 @@ async def signup(
     background_tasks: BackgroundTasks,
     request: Request,
     users_repository: AbstractUserRepository = Depends(get_users_repository),
+    pwd_handler: AbstractPasswordHashHandler = Depends(get_password_handler),
 ) -> UserOut:
     exist_user = await users_repository.get_user_by_email(new_user.email)
     if exist_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
         )
-    new_user.password = auth_service.get_password_hash(new_user.password)
+    new_user.password = pwd_handler.get_password_hash(new_user.password)
     new_user = await users_repository.create_user(new_user)
     # background_tasks.add_task(
     #     send_email, new_user.email, new_user.username, request.base_url
@@ -44,6 +46,7 @@ async def signup(
 async def login(
     body: OAuth2PasswordRequestForm = Depends(),
     users_repository: AbstractUserRepository = Depends(get_users_repository),
+    pwd_handler: AbstractPasswordHashHandler = Depends(get_password_handler),
 ) -> Token:
     # confusing! username in body of login request is email address
     user = await users_repository.get_user_by_email(body.username)
@@ -56,7 +59,7 @@ async def login(
     #     raise HTTPException(
     #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed"
     #     )
-    if not auth_service.verify_password(body.password, user.password):
+    if not pwd_handler.verify_password(body.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password"
         )
@@ -65,7 +68,6 @@ async def login(
     refresh_token = await auth_service.create_refresh_token(data={"sub": user.email})
     await users_repository.update_token(user, refresh_token)
     return Token(access_token=access_token, refresh_token=refresh_token)
-    # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
 @router.get("/refresh_token", response_model=Token)
