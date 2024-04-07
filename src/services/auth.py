@@ -14,6 +14,9 @@ from src.database.db import get_db
 from src.repository import users as repository_users
 from src.schemas.users import UserOut
 
+# ATTENTION!!! bcrypt warning due to passlib which attempts to read a bcrypt version (for logging only)
+# passlib seems to be abandoned - considering removing it
+
 
 class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

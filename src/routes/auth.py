@@ -4,12 +4,13 @@ from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBearer,
 )
-from sqlalchemy.orm import Session
 from fastapi.requests import Request
+from src.repository.abstract import AbstractUserRepository
+from dependencies import get_users_repository
 
-from src.database.db import get_db
-from src.schemas.users import UserIn, UserCreated, Token, RequestEmail
-from src.repository import users as repository_users
+from src.schemas.users import UserIn, UserOut, Token, RequestEmail
+
+# from src.repository import users as users_repository
 from src.services.auth import auth_service
 
 # from src.services.email import send_email
@@ -20,29 +21,33 @@ security = HTTPBearer()
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def signup(
-    body: UserIn,
+    new_user: UserIn,
     background_tasks: BackgroundTasks,
     request: Request,
-    db: Session = Depends(get_db),
-) -> UserCreated:
-    exist_user = await repository_users.get_user_by_email(body.email, db)
+    users_repository: AbstractUserRepository = Depends(get_users_repository),
+) -> UserOut:
+    exist_user = await users_repository.get_user_by_email(new_user.email)
     if exist_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
         )
-    body.password = auth_service.get_password_hash(body.password)
-    new_user = await repository_users.create_user(body, db)
+    new_user.password = auth_service.get_password_hash(new_user.password)
+    new_user = await users_repository.create_user(new_user)
     # background_tasks.add_task(
     #     send_email, new_user.email, new_user.username, request.base_url
     # )
-    return {"user": new_user, "detail": "User successfully created"}
+    # return {"user": new_user, "detail": "User successfully created"}
+    return new_user
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 async def login(
-    body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
-):
-    user = await repository_users.get_user_by_email(body.username, db)
+    body: OAuth2PasswordRequestForm = Depends(),
+    users_repository: AbstractUserRepository = Depends(get_users_repository),
+) -> Token:
+    # confusing! username in body of login request is email address
+    user = await users_repository.get_user_by_email(body.username)
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email"
@@ -58,45 +63,47 @@ async def login(
     # Generate JWT
     access_token = await auth_service.create_access_token(data={"sub": user.email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": user.email})
-    await repository_users.update_token(user, refresh_token, db)
-    return Token(
-        access_token=access_token, refresh_token=refresh_token
-    )  # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+    await users_repository.update_token(user, refresh_token)
+    return Token(access_token=access_token, refresh_token=refresh_token)
+    # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
 @router.get("/refresh_token", response_model=Token)
 async def refresh_token(
     credentials: HTTPAuthorizationCredentials = Security(security),
-    db: Session = Depends(get_db),
+    users_repository: AbstractUserRepository = Depends(get_users_repository),
 ):
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
-    user = await repository_users.get_user_by_email(email, db)
+    user = await users_repository.get_user_by_email(email)
     if user.refresh_token != token:
-        await repository_users.update_token(user, None, db)
+        await users_repository.update_token(user, None)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
 
     access_token = await auth_service.create_access_token(data={"sub": email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": email})
-    await repository_users.update_token(user, refresh_token, db)
+    await users_repository.update_token(user, refresh_token)
     return Token(
         access_token=access_token, refresh_token=refresh_token
     )  # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
 @router.get("/confirmed_email/{token}")
-async def confirmed_email(token: str, db: Session = Depends(get_db)):
+async def confirmed_email(
+    token: str,
+    users_repository: AbstractUserRepository = Depends(get_users_repository),
+):
     email = await auth_service.get_email_from_token(token)
-    user = await repository_users.get_user_by_email(email, db)
+    user = await users_repository.get_user_by_email(email)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error"
         )
     if user.confirmed:
         return {"message": "Your email is already confirmed"}
-    await repository_users.confirm_email(email, db)
+    await users_repository.confirm_email(email)
     return {"message": "Email confirmed"}
 
 
@@ -105,9 +112,9 @@ async def request_email(
     body: RequestEmail,
     background_tasks: BackgroundTasks,
     request: Request,
-    db: Session = Depends(get_db),
+    users_repository: AbstractUserRepository = Depends(get_users_repository),
 ):
-    user = await repository_users.get_user_by_email(body.email, db)
+    user = await users_repository.get_user_by_email(body.email)
 
     # if user.confirmed:
     #     return {"message": "Your email is already confirmed"}
