@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from src.schemas.contacts import ContactIn, ContactOut
-from src.schemas.users import UserIn, UserOut, UserCreated
+from src.schemas.users import UserIn, UserOut
 
 
 class AbstractContactRepository(ABC):
@@ -30,7 +30,7 @@ class AbstractUserRepository(ABC):
     def get_user_by_email(self, email: str) -> UserOut: ...
 
     @abstractmethod
-    def create_user(self, new_user: UserIn) -> UserCreated: ...
+    def create_user(self, new_user: UserIn) -> UserOut: ...
 
     @abstractmethod
     def update_token(self, user: UserOut, token: str | None) -> None: ...

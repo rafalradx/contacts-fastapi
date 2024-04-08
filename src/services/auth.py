@@ -29,6 +29,7 @@ class Auth:
         self, data: dict, expires_delta: Optional[float] = None
     ):
         to_encode = data.copy()
+        print(to_encode)
         if expires_delta:
             expire = datetime.now(timezone.utc) + timedelta(seconds=expires_delta)
         else:
@@ -36,6 +37,7 @@ class Auth:
         to_encode.update(
             {"iat": datetime.now(timezone.utc), "exp": expire, "scope": "access_token"}
         )
+        print(to_encode)
         encoded_access_token = jwt.encode(
             to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
         )

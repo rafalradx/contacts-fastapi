@@ -60,7 +60,7 @@ async def remove_contact(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(auth_service.get_current_user),
 ) -> ContactOut:
-    contact = contacts_repository.delete_contact(contact_id)
+    contact = contacts_repository.delete_contact(contact_id, current_user)
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return contact

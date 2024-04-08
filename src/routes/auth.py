@@ -38,7 +38,6 @@ async def signup(
     # background_tasks.add_task(
     #     send_email, new_user.email, new_user.username, request.base_url
     # )
-    # return {"user": new_user, "detail": "User successfully created"}
     return new_user
 
 
@@ -48,7 +47,7 @@ async def login(
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     pwd_handler: AbstractPasswordHashHandler = Depends(get_password_handler),
 ) -> Token:
-    # confusing! username in body of login request is email address
+    # confusing! email address is a username in body of login request
     user = await users_repository.get_user_by_email(body.username)
 
     if user is None:
@@ -70,11 +69,11 @@ async def login(
     return Token(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.get("/refresh_token", response_model=Token)
+@router.get("/refresh_token")
 async def refresh_token(
     credentials: HTTPAuthorizationCredentials = Security(security),
     users_repository: AbstractUserRepository = Depends(get_users_repository),
-):
+) -> Token:
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await users_repository.get_user_by_email(email)
@@ -87,9 +86,7 @@ async def refresh_token(
     access_token = await auth_service.create_access_token(data={"sub": email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": email})
     await users_repository.update_token(user, refresh_token)
-    return Token(
-        access_token=access_token, refresh_token=refresh_token
-    )  # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+    return Token(access_token=access_token, refresh_token=refresh_token)
 
 
 @router.get("/confirmed_email/{token}")

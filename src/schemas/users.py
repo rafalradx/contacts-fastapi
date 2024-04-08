@@ -16,11 +16,6 @@ class UserOut(BaseModel):
     avatar: str
 
 
-class UserCreated(BaseModel):
-    user: UserOut
-    detail: str = "User successfully created"
-
-
 class Token(BaseModel):
     access_token: str
     refresh_token: str

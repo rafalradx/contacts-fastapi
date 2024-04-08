@@ -1,6 +1,6 @@
 from src.repository.abstract import AbstractUserRepository
 from src.database.models import User
-from src.schemas.users import UserIn, UserOut, UserCreated
+from src.schemas.users import UserIn, UserOut
 from sqlalchemy.orm import Session
 from libgravatar import Gravatar
 
@@ -15,8 +15,8 @@ class UserRepository(AbstractUserRepository):
     async def create_user(self, new_user: UserIn) -> UserOut:
         avatar = None
         try:
-            g = Gravatar(new_user.email)
-            avatar = g.get_image()
+            gravatar = Gravatar(new_user.email)
+            avatar = gravatar.get_image()
         except Exception as e:
             print(e)
         new_user = User(**new_user.model_dump(), avatar=avatar)
