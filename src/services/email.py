@@ -21,7 +21,7 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=False,
-    TEMPLATE_FOLDER=Path(__file__).parent / "templates",
+    TEMPLATE_FOLDER="./templates",
 )
 
 

@@ -9,12 +9,12 @@ from src.repository.abstract import AbstractUserRepository
 from dependencies import get_users_repository, get_password_handler
 
 from src.schemas.users import UserIn, UserOut, Token, RequestEmail
-
-# from src.repository import users as users_repository
 from src.services.auth import auth_service
 from src.services.pwd_handler import AbstractPasswordHashHandler
+from src.services.email import send_email
+from src.config import settings
 
-# from src.services.email import send_email
+EMAIL_VERIFICATION_REQUIRED = settings.email_verification_required
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer()
@@ -35,30 +35,33 @@ async def signup(
         )
     new_user.password = pwd_handler.get_password_hash(new_user.password)
     new_user = await users_repository.create_user(new_user)
-    # background_tasks.add_task(
-    #     send_email, new_user.email, new_user.username, request.base_url
-    # )
+
+    if EMAIL_VERIFICATION_REQUIRED:
+        background_tasks.add_task(
+            send_email, new_user.email, new_user.username, request.base_url
+        )
     return new_user
 
 
 @router.post("/login")
 async def login(
-    body: OAuth2PasswordRequestForm = Depends(),
+    login_form: OAuth2PasswordRequestForm = Depends(),
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     pwd_handler: AbstractPasswordHashHandler = Depends(get_password_handler),
 ) -> Token:
     # confusing! email address is a username in body of login request
-    user = await users_repository.get_user_by_email(body.username)
+    user = await users_repository.get_user_by_email(login_form.username)
 
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email"
         )
-    # if not user.confirmed:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed"
-    #     )
-    if not pwd_handler.verify_password(body.password, user.password):
+    if EMAIL_VERIFICATION_REQUIRED:
+        if not user.confirmed:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed"
+            )
+    if not pwd_handler.verify_password(login_form.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password"
         )
@@ -113,12 +116,14 @@ async def request_email(
     request: Request,
     users_repository: AbstractUserRepository = Depends(get_users_repository),
 ):
-    user = await users_repository.get_user_by_email(body.email)
+    if not EMAIL_VERIFICATION_REQUIRED:
+        return {"message": "Email verification not required"}
 
-    # if user.confirmed:
-    #     return {"message": "Your email is already confirmed"}
-    # if user:
-    #     background_tasks.add_task(
-    #         send_email, user.email, user.username, request.base_url
-    #     )
+    user = await users_repository.get_user_by_email(body.email)
+    if user.confirmed:
+        return {"message": "Your email is already confirmed"}
+    if user:
+        background_tasks.add_task(
+            send_email, user.email, user.username, request.base_url
+        )
     return {"message": "Check your email for confirmation."}
