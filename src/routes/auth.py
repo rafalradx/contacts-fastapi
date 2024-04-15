@@ -92,8 +92,8 @@ async def refresh_token(
     return Token(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.get("/confirmed_email/{token}")
-async def confirmed_email(
+@router.get("/confirm_email/{token}")
+async def confirm_email(
     token: str,
     users_repository: AbstractUserRepository = Depends(get_users_repository),
 ):
