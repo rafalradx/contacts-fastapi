@@ -21,12 +21,3 @@ def get_password_handler() -> AbstractPasswordHashHandler:
 
 def get_redis_client() -> Redis:
     return Redis(host=settings.redis_host, port=settings.redis_port, db=0)
-
-
-# def get_JWT_authorizer() -> AuthWithJWT:
-#     return AuthWithJWT(
-#         secret_key=settings.jwt_secret_key,
-#         algorithm=settings.jwt_algorithm,
-#         redis_client=Redis(host=settings.redis_host, port=settings.redis_port, db=0),
-#         oauth2_scheme=OAuth2PasswordBearer(tokenUrl="/api/auth/login"),
-#     )
