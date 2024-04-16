@@ -11,7 +11,6 @@ from src.services.auth import auth_service
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 

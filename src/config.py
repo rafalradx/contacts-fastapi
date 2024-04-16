@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
     postgres_port: int
-    # cloudinary_name: str
-    # cloudinary_api_key: str
-    # cloudinary_api_secret: str
+    cloudinary_name: str
+    cloudinary_api_key: str
+    cloudinary_api_secret: str
     email_verification_required: bool
 
     class Config:

@@ -19,6 +19,8 @@ python-multipart = "*"
 libgravatar = "*"
 fastapi-mail = "*"
 bcrypt = "*"
+fastapi-limiter = "*"
+cloudinary = "*"
 
 [dev-packages]
 
