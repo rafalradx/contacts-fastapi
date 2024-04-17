@@ -27,4 +27,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-print(settings.model_dump())
