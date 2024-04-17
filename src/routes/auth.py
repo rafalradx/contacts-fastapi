@@ -37,7 +37,6 @@ async def signup(
     new_user = await users_repository.create_user(new_user)
 
     if EMAIL_VERIFICATION_REQUIRED:
-        print("email sent")
         background_tasks.add_task(
             send_email, new_user.email, new_user.username, request.base_url
         )
