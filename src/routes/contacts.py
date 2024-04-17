@@ -12,6 +12,7 @@ from fastapi_limiter.depends import RateLimiter
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+request_limiter = RateLimiter(times=2, seconds=5)
 
 
 async def get_current_user(
@@ -33,9 +34,6 @@ async def get_current_user(
     await redis.set(f"user:{user_email}", pickle.dumps(user))
     await redis.expire(f"user:{user_email}", 900)
     return user
-
-
-request_limiter = RateLimiter(times=2, seconds=5)
 
 
 @router.get(
