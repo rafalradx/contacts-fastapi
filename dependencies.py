@@ -4,7 +4,7 @@ from src.database.db import SessionLocal
 from src.repository.contacts import ContactRepository
 from src.repository.users import UserRepository
 from src.config import settings
-from redis import Redis
+from redis.asyncio import Redis
 
 
 def get_contacts_repository() -> AbstractContactRepository:
@@ -20,4 +20,11 @@ def get_password_handler() -> AbstractPasswordHashHandler:
 
 
 def get_redis_client() -> Redis:
-    return Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    Redis()
+    return Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        db=0,
+        encoding="utf-8",
+        decode_responses=True,
+    )

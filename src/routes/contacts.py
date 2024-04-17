@@ -7,7 +7,7 @@ from dependencies import get_contacts_repository, get_users_repository, get_redi
 from src.schemas.contacts import ContactOut, ContactIn
 from src.schemas.users import UserOut
 from src.services.auth import auth_service
-
+from fastapi_limiter.depends import RateLimiter
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
@@ -35,7 +35,14 @@ async def get_current_user(
     return user
 
 
-@router.get("/{contact_id}", status_code=status.HTTP_200_OK)
+request_limiter = RateLimiter(times=2, seconds=5)
+
+
+@router.get(
+    "/{contact_id}",
+    dependencies=[Depends(request_limiter)],
+    status_code=status.HTTP_200_OK,
+)
 async def read_contact(
     id: int = Path(description="The ID of contact to be acquired."),
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
@@ -47,7 +54,7 @@ async def read_contact(
     return contact
 
 
-@router.get("", status_code=status.HTTP_200_OK)
+@router.get("", dependencies=[Depends(request_limiter)], status_code=status.HTTP_200_OK)
 async def read_contacts(
     first_name: str | None = Query(default=None, max_length=50),
     last_name: str | None = Query(default=None, max_length=50),
@@ -60,7 +67,11 @@ async def read_contacts(
     return contacts
 
 
-@router.get("/birthdays", status_code=status.HTTP_200_OK)
+@router.get(
+    "/birthdays",
+    dependencies=[Depends(request_limiter)],
+    status_code=status.HTTP_200_OK,
+)
 async def read_upcoming_birthdays(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
@@ -71,7 +82,9 @@ async def read_upcoming_birthdays(
     return contacts
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", dependencies=[Depends(request_limiter)], status_code=status.HTTP_201_CREATED
+)
 async def create_contact(
     contact: ContactIn,
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
@@ -82,7 +95,11 @@ async def create_contact(
     return new_contact
 
 
-@router.delete("/{contact_id}", status_code=status.HTTP_200_OK)
+@router.delete(
+    "/{contact_id}",
+    dependencies=[Depends(request_limiter)],
+    status_code=status.HTTP_200_OK,
+)
 async def remove_contact(
     contact_id: int = Path(description="The ID of contact to be removed."),
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
@@ -94,7 +111,11 @@ async def remove_contact(
     return contact
 
 
-@router.put("/{contact_id}", status_code=status.HTTP_200_OK)
+@router.put(
+    "/{contact_id}",
+    dependencies=[Depends(request_limiter)],
+    status_code=status.HTTP_200_OK,
+)
 async def update_contact(
     contact: ContactIn,
     contact_id: int = Path(description="The ID of contact to be updated."),
