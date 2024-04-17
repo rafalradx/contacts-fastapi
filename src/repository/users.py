@@ -23,7 +23,6 @@ class UserRepository(AbstractUserRepository):
         self._session.add(new_user)
         self._session.commit()
         self._session.refresh(new_user)
-        print(new_user)
         return UserOut(**new_user.to_dict())
 
     async def update_token(self, user: User, token: str | None) -> None:

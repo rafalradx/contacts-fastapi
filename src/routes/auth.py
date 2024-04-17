@@ -14,7 +14,7 @@ from src.services.pwd_handler import AbstractPasswordHashHandler
 from src.services.email import send_email
 from src.config import settings
 
-EMAIL_VERIFICATION_REQUIRED = settings.email_verification_required
+EMAIL_VERIFICATION_REQUIRED = settings.email_verification
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer()
@@ -37,6 +37,7 @@ async def signup(
     new_user = await users_repository.create_user(new_user)
 
     if EMAIL_VERIFICATION_REQUIRED:
+        print("email sent")
         background_tasks.add_task(
             send_email, new_user.email, new_user.username, request.base_url
         )
