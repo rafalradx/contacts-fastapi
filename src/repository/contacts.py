@@ -12,7 +12,7 @@ class ContactRepository(AbstractContactRepository):
 
     async def get_contact(self, id: int, user: UserOut) -> ContactOut:
         contact = (
-            await self._session.query(Contact)
+            self._session.query(Contact)
             .filter(Contact.user_id == user.id, Contact.id == id)
             .first()
         )

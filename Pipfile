@@ -21,6 +21,8 @@ fastapi-mail = "*"
 bcrypt = "*"
 fastapi-limiter = "*"
 cloudinary = "*"
+pytest = "*"
+httpx = "*"
 
 [dev-packages]
 

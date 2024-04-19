@@ -3,3 +3,5 @@ commands_log.txt
 .env
 alembic.txt
 postgres-data/
+.pytest_cache
+postgres-data
