@@ -1,7 +1,7 @@
 import pickle
 from fastapi import APIRouter, Path, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer
-from redis import Redis
+from redis.asyncio import Redis
 from src.repository.abstract import AbstractContactRepository, AbstractUserRepository
 from dependencies import get_contacts_repository, get_users_repository, get_redis_client
 from src.schemas.contacts import ContactOut, ContactIn
@@ -21,7 +21,7 @@ async def get_current_user(
     redis: Redis = Depends(get_redis_client),
 ) -> UserOut:
     user_email = await auth_service.get_email_from_access_token(token=token)
-    user = redis.get(f"user:{user_email}")
+    user = await redis.get(f"user:{user_email}")
     if user is not None:
         return pickle.loads(user)
 
@@ -42,11 +42,11 @@ async def get_current_user(
     status_code=status.HTTP_200_OK,
 )
 async def read_contact(
-    id: int = Path(description="The ID of contact to be acquired."),
+    contact_id: int = Path(description="The ID of contact to be acquired."),
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> ContactOut:
-    contact = await contacts_repository.get_contact(id, current_user)
+    contact = await contacts_repository.get_contact(contact_id, current_user)
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return contact

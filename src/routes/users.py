@@ -2,7 +2,7 @@ import pickle
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer
-from redis import Redis
+from redis.asyncio import Redis
 import cloudinary
 import cloudinary.uploader
 from dependencies import get_users_repository, get_redis_client
@@ -23,7 +23,7 @@ async def get_current_user(
     redis: Redis = Depends(get_redis_client),
 ) -> UserOut:
     user_email = await auth_service.get_email_from_access_token(token=token)
-    user = redis.get(f"user:{user_email}")
+    user = await redis.get(f"user:{user_email}")
     if user is not None:
         return pickle.loads(user)
 
