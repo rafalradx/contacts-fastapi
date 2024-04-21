@@ -30,16 +30,32 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
+    """
+    Initialize FastAPI requests limiter
+    """
     await FastAPILimiter.init(get_redis_client())
 
 
 @app.get("/")
 def read_root():
+    """
+    root level endpoint
+
+    :return: Hello world message.
+    :rtype: dict
+    """
+
     return {"message": "Hello world"}
 
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
+    """
+    Endpoint to serve the favicon.
+
+    :return: The favicon file.
+    :rtype: FileResponse
+    """
     file_name = "favicon.png"
     file_path = os.path.join(app.root_path, "static", file_name)
     return FileResponse(
