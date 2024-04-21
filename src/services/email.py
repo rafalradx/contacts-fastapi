@@ -1,5 +1,6 @@
 import ssl
 from pathlib import Path
+import sys
 
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from fastapi_mail.errors import ConnectionErrors
@@ -21,7 +22,7 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=False,
-    TEMPLATE_FOLDER="./templates",
+    TEMPLATE_FOLDER=Path(__file__).parent / "templates",
 )
 
 

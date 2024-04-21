@@ -476,8 +476,129 @@ None if the token should be removed.</p></li>
 </dd></dl>
 
 </section>
-<section id="restinpeace-api-routes-auth">
-<h1>RESTinPeace Api routes Auth<a class="headerlink" href="#restinpeace-api-routes-auth" title="Link to this heading">¶</a></h1>
+<section id="module-src.routes.auth">
+<span id="restinpeace-api-routes-auth"></span><h1>RESTinPeace Api routes Auth<a class="headerlink" href="#module-src.routes.auth" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.routes.auth.confirm_email">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">confirm_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_repository</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><span class="pre">AbstractUserRepository</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_users_repository)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.routes.auth.confirm_email" title="Link to this definition">¶</a></dt>
+<dd><p>Endpoint to confirm the email address using the verification token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>token</strong> (<em>str</em>) – The verification token.</p></li>
+<li><p><strong>users_repository</strong> (<a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><em>AbstractUserRepository</em></a>) – The repository for user data.</p></li>
+<li><p><strong>auth_service</strong> (<a class="reference internal" href="#src.services.auth.HandleJWT" title="src.services.auth.HandleJWT"><em>HandleJWT</em></a>) – The JWT handling service.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A message indicating the confirmation status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException 400</strong> – If there is a verification error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.routes.auth.login">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">login_form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OAuth2PasswordRequestForm</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(NoneType)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_repository</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><span class="pre">AbstractUserRepository</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_users_repository)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pwd_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.services.pwd_handler.AbstractPasswordHashHandler" title="src.services.pwd_handler.AbstractPasswordHashHandler"><span class="pre">AbstractPasswordHashHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_password_handler)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Token</span></span></span><a class="headerlink" href="#src.routes.auth.login" title="Link to this definition">¶</a></dt>
+<dd><p>Endpoint for user login.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>login_form</strong> (<em>OAuth2PasswordRequestForm</em>) – The login form containing username (email) and password.</p></li>
+<li><p><strong>users_repository</strong> (<a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><em>AbstractUserRepository</em></a>) – The repository for user data.</p></li>
+<li><p><strong>pwd_handler</strong> (<a class="reference internal" href="#src.services.pwd_handler.AbstractPasswordHashHandler" title="src.services.pwd_handler.AbstractPasswordHashHandler"><em>AbstractPasswordHashHandler</em></a>) – The password hashing handler.</p></li>
+<li><p><strong>auth_service</strong> (<a class="reference internal" href="#src.services.auth.HandleJWT" title="src.services.auth.HandleJWT"><em>HandleJWT</em></a>) – The JWT handling service.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The generated access and refresh tokens.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Token</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException 401</strong> – If the email, password, or email verification is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.routes.auth.refresh_token">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">refresh_token</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">credentials</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPAuthorizationCredentials</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Security(HTTPBearer)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_repository</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><span class="pre">AbstractUserRepository</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_users_repository)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Token</span></span></span><a class="headerlink" href="#src.routes.auth.refresh_token" title="Link to this definition">¶</a></dt>
+<dd><p>Endpoint to refresh the access token using the refresh token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>credentials</strong> (<em>HTTPAuthorizationCredentials</em>) – The HTTP Authorization Credentials containing the refresh token.</p></li>
+<li><p><strong>users_repository</strong> (<a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><em>AbstractUserRepository</em></a>) – The repository for user data.</p></li>
+<li><p><strong>auth_service</strong> (<a class="reference internal" href="#src.services.auth.HandleJWT" title="src.services.auth.HandleJWT"><em>HandleJWT</em></a>) – The JWT handling service.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The generated access and refresh tokens.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Token</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException 401</strong> – If the refresh token is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.routes.auth.request_email">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">request_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RequestEmail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_repository</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><span class="pre">AbstractUserRepository</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_users_repository)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.routes.auth.request_email" title="Link to this definition">¶</a></dt>
+<dd><p>Endpoint to request sending an amail address verifacion email.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>body</strong> (<em>RequestEmail</em>) – The request body containing the email address to be confirmed.</p></li>
+<li><p><strong>background_tasks</strong> (<em>BackgroundTasks</em>) – Background tasks to be executed.</p></li>
+<li><p><strong>request</strong> (<em>Request</em>) – The incoming request.</p></li>
+<li><p><strong>users_repository</strong> (<a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><em>AbstractUserRepository</em></a>) – The repository for user data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A message indicating the result of the request.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.routes.auth.signup">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">signup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">UserIn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_repository</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><span class="pre">AbstractUserRepository</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_users_repository)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pwd_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#src.services.pwd_handler.AbstractPasswordHashHandler" title="src.services.pwd_handler.AbstractPasswordHashHandler"><span class="pre">AbstractPasswordHashHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_password_handler)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">UserOut</span></span></span><a class="headerlink" href="#src.routes.auth.signup" title="Link to this definition">¶</a></dt>
+<dd><p>Endpoint to register a new user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_user</strong> (<em>UserIn</em>) – The user details to be registered.</p></li>
+<li><p><strong>background_tasks</strong> (<em>BackgroundTasks</em>) – Background tasks to be executed.</p></li>
+<li><p><strong>request</strong> (<em>Request</em>) – The incoming request.</p></li>
+<li><p><strong>users_repository</strong> (<a class="reference internal" href="#src.repository.abstract.AbstractUserRepository" title="src.repository.abstract.AbstractUserRepository"><em>AbstractUserRepository</em></a>) – The repository for user data.</p></li>
+<li><p><strong>pwd_handler</strong> (<a class="reference internal" href="#src.services.pwd_handler.AbstractPasswordHashHandler" title="src.services.pwd_handler.AbstractPasswordHashHandler"><em>AbstractPasswordHashHandler</em></a>) – The password hashing handler.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The registered user details.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UserOut</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException 409</strong> – If the account already exists.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-src.routes.contacts">
 <span id="restinpeace-api-routes-contacts"></span><h1>RESTinPeace Api routes Contacts<a class="headerlink" href="#module-src.routes.contacts" title="Link to this heading">¶</a></h1>
@@ -834,8 +955,29 @@ None if the token should be removed.</p></li>
 </dd></dl>
 
 </section>
-<section id="restinpeace-api-service-email">
-<h1>RESTinPeace API service Email<a class="headerlink" href="#restinpeace-api-service-email" title="Link to this heading">¶</a></h1>
+<section id="module-src.services.email">
+<span id="restinpeace-api-service-email"></span><h1>RESTinPeace API service Email<a class="headerlink" href="#module-src.services.email" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.services.email.send_email">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.services.email.</span></span><span class="sig-name descname"><span class="pre">send_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">email</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EmailStr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#src.services.email.send_email" title="Link to this definition">¶</a></dt>
+<dd><p>Sends an email to the specified recipient for email confirmation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> (<em>EmailStr</em>) – The recipient’s email address.</p></li>
+<li><p><strong>username</strong> (<em>str</em>) – The username of the recipient.</p></li>
+<li><p><strong>host</strong> (<em>str</em>) – The host URL for the application.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-src.services.pwd_handler">
 <span id="restinpeace-api-service-password-handler"></span><h1>RESTinPeace API service Password Handler<a class="headerlink" href="#module-src.services.pwd_handler" title="Link to this heading">¶</a></h1>
@@ -994,7 +1136,14 @@ that uses the bcrypt hashing algorithm.</p>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#restinpeace-api-routes-auth">RESTinPeace Api routes Auth</a></li>
+<li><a class="reference internal" href="#module-src.routes.auth">RESTinPeace Api routes Auth</a><ul>
+<li><a class="reference internal" href="#src.routes.auth.confirm_email"><code class="docutils literal notranslate"><span class="pre">confirm_email()</span></code></a></li>
+<li><a class="reference internal" href="#src.routes.auth.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
+<li><a class="reference internal" href="#src.routes.auth.refresh_token"><code class="docutils literal notranslate"><span class="pre">refresh_token()</span></code></a></li>
+<li><a class="reference internal" href="#src.routes.auth.request_email"><code class="docutils literal notranslate"><span class="pre">request_email()</span></code></a></li>
+<li><a class="reference internal" href="#src.routes.auth.signup"><code class="docutils literal notranslate"><span class="pre">signup()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-src.routes.contacts">RESTinPeace Api routes Contacts</a><ul>
 <li><a class="reference internal" href="#src.routes.contacts.create_contact"><code class="docutils literal notranslate"><span class="pre">create_contact()</span></code></a></li>
 <li><a class="reference internal" href="#src.routes.contacts.get_current_user"><code class="docutils literal notranslate"><span class="pre">get_current_user()</span></code></a></li>
@@ -1023,7 +1172,10 @@ that uses the bcrypt hashing algorithm.</p>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#restinpeace-api-service-email">RESTinPeace API service Email</a></li>
+<li><a class="reference internal" href="#module-src.services.email">RESTinPeace API service Email</a><ul>
+<li><a class="reference internal" href="#src.services.email.send_email"><code class="docutils literal notranslate"><span class="pre">send_email()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-src.services.pwd_handler">RESTinPeace API service Password Handler</a><ul>
 <li><a class="reference internal" href="#src.services.pwd_handler.AbstractPasswordHashHandler"><code class="docutils literal notranslate"><span class="pre">AbstractPasswordHashHandler</span></code></a><ul>
 <li><a class="reference internal" href="#src.services.pwd_handler.AbstractPasswordHashHandler.get_password_hash"><code class="docutils literal notranslate"><span class="pre">AbstractPasswordHashHandler.get_password_hash()</span></code></a></li>
