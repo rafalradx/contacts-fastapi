@@ -22,6 +22,26 @@ async def get_current_user(
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     redis: Redis = Depends(get_redis_client),
 ) -> UserOut:
+    """
+    Get the current authenticated user.
+
+    :param token: The OAuth2 token.
+    :type token: str
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param redis: The Redis client.
+    :type redis: Redis
+
+    :param auth_service: The JWT handling service.
+    :type auth_service: HandleJWT
+
+    :return: The current authenticated user.
+    :rtype: UserOut
+
+    :raises HTTPException 401: If the credentials are invalid.
+    """
     user_email = await auth_service.get_email_from_access_token(token=token)
     user = await redis.get(f"user:{user_email}")
     if user is not None:
@@ -42,6 +62,15 @@ async def get_current_user(
 async def read_users_me(
     current_user: User = Depends(get_current_user),
 ) -> UserOut:
+    """
+    Get the details of the current authenticated user.
+
+    :param current_user: The current authenticated user.
+    :type current_user: User
+
+    :return: The details of the current authenticated user.
+    :rtype: UserOut
+    """
     return current_user
 
 
@@ -52,6 +81,24 @@ async def update_avatar_user(
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     redis: Redis = Depends(get_redis_client),
 ):
+    """
+    Update the avatar of the current authenticated user via cloudinary upload service
+
+    :param file: The image file to upload as the new avatar.
+    :type file: UploadFile
+
+    :param current_user: The current authenticated user.
+    :type current_user: User
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param redis: The Redis client.
+    :type redis: Redis
+
+    :return: The updated user with the new avatar.
+    :rtype: UserOut
+    """
     cloudinary.config(
         cloud_name=settings.cloudinary_name,
         api_key=settings.cloudinary_api_key,

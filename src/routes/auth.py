@@ -28,6 +28,29 @@ async def signup(
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     pwd_handler: AbstractPasswordHashHandler = Depends(get_password_handler),
 ) -> UserOut:
+    """
+    Endpoint to register a new user.
+
+    :param new_user: The user details to be registered.
+    :type new_user: UserIn
+
+    :param background_tasks: Background tasks to be executed.
+    :type background_tasks: BackgroundTasks
+
+    :param request: The incoming request.
+    :type request: Request
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param pwd_handler: The password hashing handler.
+    :type pwd_handler: AbstractPasswordHashHandler
+
+    :return: The registered user details.
+    :rtype: UserOut
+
+    :raises HTTPException 409: If the account already exists.
+    """
     exist_user = await users_repository.get_user_by_email(new_user.email)
     if exist_user:
         raise HTTPException(
@@ -49,6 +72,26 @@ async def login(
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     pwd_handler: AbstractPasswordHashHandler = Depends(get_password_handler),
 ) -> Token:
+    """
+    Endpoint for user login.
+
+    :param login_form: The login form containing username (email) and password.
+    :type login_form: OAuth2PasswordRequestForm
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param pwd_handler: The password hashing handler.
+    :type pwd_handler: AbstractPasswordHashHandler
+
+    :param auth_service: The JWT handling service.
+    :type auth_service: HandleJWT
+
+    :return: The generated access and refresh tokens.
+    :rtype: Token
+
+    :raises HTTPException 401: If the email, password, or email verification is invalid.
+    """
     # confusing! email address is a username in body of login request
     user = await users_repository.get_user_by_email(login_form.username)
 
@@ -77,6 +120,23 @@ async def refresh_token(
     credentials: HTTPAuthorizationCredentials = Security(security),
     users_repository: AbstractUserRepository = Depends(get_users_repository),
 ) -> Token:
+    """
+    Endpoint to refresh the access token using the refresh token.
+
+    :param credentials: The HTTP Authorization Credentials containing the refresh token.
+    :type credentials: HTTPAuthorizationCredentials
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param auth_service: The JWT handling service.
+    :type auth_service: HandleJWT
+
+    :return: The generated access and refresh tokens.
+    :rtype: Token
+
+    :raises HTTPException 401: If the refresh token is invalid.
+    """
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await users_repository.get_user_by_email(email)
@@ -97,6 +157,23 @@ async def confirm_email(
     token: str,
     users_repository: AbstractUserRepository = Depends(get_users_repository),
 ):
+    """
+    Endpoint to confirm the email address using the verification token.
+
+    :param token: The verification token.
+    :type token: str
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param auth_service: The JWT handling service.
+    :type auth_service: HandleJWT
+
+    :return: A message indicating the confirmation status.
+    :rtype: dict
+
+    :raises HTTPException 400: If there is a verification error.
+    """
     email = await auth_service.get_email_from_token(token)
     user = await users_repository.get_user_by_email(email)
     if user is None:
@@ -116,6 +193,24 @@ async def request_email(
     request: Request,
     users_repository: AbstractUserRepository = Depends(get_users_repository),
 ):
+    """
+    Endpoint to request sending an amail address verifacion email.
+
+    :param body: The request body containing the email address to be confirmed.
+    :type body: RequestEmail
+
+    :param background_tasks: Background tasks to be executed.
+    :type background_tasks: BackgroundTasks
+
+    :param request: The incoming request.
+    :type request: Request
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :return: A message indicating the result of the request.
+    :rtype: dict
+    """
     if not EMAIL_VERIFICATION_REQUIRED:
         return {"message": "Email verification not required"}
 
