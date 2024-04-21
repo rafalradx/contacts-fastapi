@@ -57,6 +57,35 @@ async def get_current_user(
 
 
 @router.get(
+    "/birthdays",
+    dependencies=[Depends(request_limiter)],
+    status_code=status.HTTP_200_OK,
+)
+async def read_upcoming_birthdays(
+    contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
+    current_user: UserOut = Depends(get_current_user),
+) -> list[ContactOut]:
+    """
+    Get a list of contacts with upcoming birthdays (7 days) for authorized user.
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user.
+    :type current_user: UserOut
+
+    :return: The list of contacts with upcoming birthdays.
+    :rtype: List[ContactOut]
+
+    :raises HTTPException 404: If no upcoming birthdays are found.
+    """
+    contacts = await contacts_repository.get_upcoming_birthdays(current_user)
+    if not contacts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return contacts
+
+
+@router.get(
     "/{contact_id}",
     dependencies=[Depends(request_limiter)],
     status_code=status.HTTP_200_OK,
@@ -120,35 +149,6 @@ async def read_contacts(
     """
     query = {"first_name": first_name, "last_name": last_name, "email": email}
     contacts = await contacts_repository.get_contacts(query, current_user)
-    return contacts
-
-
-@router.get(
-    "/birthdays",
-    dependencies=[Depends(request_limiter)],
-    status_code=status.HTTP_200_OK,
-)
-async def read_upcoming_birthdays(
-    contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
-    current_user: UserOut = Depends(get_current_user),
-) -> list[ContactOut]:
-    """
-    Get a list of contacts with upcoming birthdays (7 days) for authorized user.
-
-    :param contacts_repository: The repository for contact data.
-    :type contacts_repository: AbstractContactRepository
-
-    :param current_user: The current authenticated user.
-    :type current_user: UserOut
-
-    :return: The list of contacts with upcoming birthdays.
-    :rtype: List[ContactOut]
-
-    :raises HTTPException 404: If no upcoming birthdays are found.
-    """
-    contacts = await contacts_repository.get_upcoming_birthdays(current_user)
-    if not contacts:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return contacts
 
 
