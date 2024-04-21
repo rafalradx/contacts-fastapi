@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, AsyncMock, Mock
 
 from sqlalchemy.orm import Session
 
-from src.database.models import User, Contact
+from src.database.models import Contact
 from src.schemas.contacts import ContactIn, ContactOut
-from src.schemas.users import UserIn, UserOut
+from src.schemas.users import UserOut
 from src.repository.contacts import ContactRepository
 from datetime import date, timedelta
 
@@ -122,7 +122,6 @@ class TestContacts(unittest.IsolatedAsyncioTestCase):
             contact_mock,
             contact_mock,
         ]
-        print(len(contact_list))
         query_mock = self.session.query.return_value
         query_mock.query.return_value.filter.return_value.all = contact_list
         result = await self.contacts_repository.get_upcoming_birthdays(user=self.user)
