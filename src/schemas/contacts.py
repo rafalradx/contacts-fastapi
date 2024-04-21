@@ -4,6 +4,11 @@ import re
 
 
 class ContactIn(BaseModel):
+    """
+    Pydantic model representing input data for creating or updating a contact.
+
+    """
+
     first_name: str
     last_name: str
     email: EmailStr
@@ -14,12 +19,28 @@ class ContactIn(BaseModel):
     @field_validator("phone_number")
     @classmethod
     def validate_phone_number(cls, v):
+        """
+        Validate the format of the phone number.
+
+        :param v: The phone number to validate.
+        :type v: str
+
+        :return: The validated phone number.
+        :rtype: str
+
+        :raises ValueError: If the phone number does not match the expected format.
+        """
         if not re.match(r"^\d{9}$", v):
             raise ValueError("Phone number must be a 9-digit number")
         return v
 
 
 class ContactOut(ContactIn):
+    """
+    Pydantic model representing output data for retrieving a contact.
+
+    """
+
     id: int
 
 

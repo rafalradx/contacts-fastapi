@@ -21,8 +21,11 @@ fastapi-mail = "*"
 bcrypt = "*"
 fastapi-limiter = "*"
 cloudinary = "*"
+pytest = "*"
+httpx = "*"
 
 [dev-packages]
+sphinx = "*"
 
 [requires]
 python_version = "3.11"

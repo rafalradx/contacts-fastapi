@@ -26,5 +26,5 @@ def get_redis_client() -> Redis:
         port=settings.redis_port,
         db=0,
         encoding="utf-8",
-        decode_responses=True,
+        decode_responses=False,
     )

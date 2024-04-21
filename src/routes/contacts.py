@@ -1,7 +1,7 @@
 import pickle
 from fastapi import APIRouter, Path, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer
-from redis import Redis
+from redis.asyncio import Redis
 from src.repository.abstract import AbstractContactRepository, AbstractUserRepository
 from dependencies import get_contacts_repository, get_users_repository, get_redis_client
 from src.schemas.contacts import ContactOut, ContactIn
@@ -20,8 +20,28 @@ async def get_current_user(
     users_repository: AbstractUserRepository = Depends(get_users_repository),
     redis: Redis = Depends(get_redis_client),
 ) -> UserOut:
+    """
+    Get the current authenticated user.
+
+    :param token: The OAuth2 token.
+    :type token: str
+
+    :param users_repository: The repository for user data.
+    :type users_repository: AbstractUserRepository
+
+    :param redis: The Redis client.
+    :type redis: Redis
+
+    :param auth_service: The JWT handling service.
+    :type auth_service: HandleJWT
+
+    :return: The current authenticated user.
+    :rtype: UserOut
+
+    :raises HTTPException 401: If the credentials are invalid.
+    """
     user_email = await auth_service.get_email_from_access_token(token=token)
-    user = redis.get(f"user:{user_email}")
+    user = await redis.get(f"user:{user_email}")
     if user is not None:
         return pickle.loads(user)
 
@@ -42,11 +62,28 @@ async def get_current_user(
     status_code=status.HTTP_200_OK,
 )
 async def read_contact(
-    id: int = Path(description="The ID of contact to be acquired."),
+    contact_id: int = Path(description="The ID of contact to be acquired."),
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> ContactOut:
-    contact = await contacts_repository.get_contact(id, current_user)
+    """
+    Get a contact by ID for authorized user
+
+    :param contact_id: The ID of the contact.
+    :type contact_id: int
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user .
+    :type current_user: UserOut
+
+    :return: The contact.
+    :rtype: ContactOut
+
+    :raises HTTPException 404: If the contact is not found.
+    """
+    contact = await contacts_repository.get_contact(contact_id, current_user)
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return contact
@@ -60,6 +97,27 @@ async def read_contacts(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> list[ContactOut]:
+    """
+    Get contacts based on query parameters for authorized user
+
+    :param first_name: The first name of the contact (optional).
+    :type first_name: str, optional
+
+    :param last_name: The last name of the contact (optional).
+    :type last_name: str, optional
+
+    :param email: The email address of the contact (optional).
+    :type email: str, optional
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user.
+    :type current_user: UserOut
+
+    :return: The list of contacts.
+    :rtype: List[ContactOut]
+    """
     query = {"first_name": first_name, "last_name": last_name, "email": email}
     contacts = await contacts_repository.get_contacts(query, current_user)
     return contacts
@@ -74,6 +132,20 @@ async def read_upcoming_birthdays(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> list[ContactOut]:
+    """
+    Get a list of contacts with upcoming birthdays (7 days) for authorized user.
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user.
+    :type current_user: UserOut
+
+    :return: The list of contacts with upcoming birthdays.
+    :rtype: List[ContactOut]
+
+    :raises HTTPException 404: If no upcoming birthdays are found.
+    """
     contacts = await contacts_repository.get_upcoming_birthdays(current_user)
     if not contacts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -88,7 +160,21 @@ async def create_contact(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> ContactOut:
-    print(current_user)
+    """
+    Create a new contact for an authorized user
+
+    :param contact: The contact data to create.
+    :type contact: ContactIn
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user.
+    :type current_user: UserOut
+
+    :return: The newly created contact.
+    :rtype: ContactOut
+    """
     new_contact = await contacts_repository.create_contact(contact, current_user)
     return new_contact
 
@@ -103,6 +189,23 @@ async def remove_contact(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> ContactOut:
+    """
+    Remove a contact from database by ID for authorized user.
+
+    :param contact_id: The ID of the contact to be removed.
+    :type contact_id: int
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user.
+    :type current_user: UserOut
+
+    :return: The removed contact.
+    :rtype: ContactOut
+
+    :raises HTTPException 404: If the contact with the specified ID is not found.
+    """
     contact = contacts_repository.delete_contact(contact_id, current_user)
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -120,6 +223,26 @@ async def update_contact(
     contacts_repository: AbstractContactRepository = Depends(get_contacts_repository),
     current_user: UserOut = Depends(get_current_user),
 ) -> ContactOut:
+    """
+    Update a contact by ID for authorized user.
+
+    :param contact: The updated contact data.
+    :type contact: ContactIn
+
+    :param contact_id: The ID of the contact to be updated.
+    :type contact_id: int
+
+    :param contacts_repository: The repository for contact data.
+    :type contacts_repository: AbstractContactRepository
+
+    :param current_user: The current authenticated user.
+    :type current_user: UserOut
+
+    :return: The updated contact.
+    :rtype: ContactOut
+
+    :raises HTTPException 404: If the contact with the specified ID is not found.
+    """
     updated_contact = contacts_repository.update_contact(
         contact_id, contact, current_user
     )

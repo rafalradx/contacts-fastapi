@@ -11,8 +11,20 @@ class ContactRepository(AbstractContactRepository):
         self._session = db_session
 
     async def get_contact(self, id: int, user: UserOut) -> ContactOut:
+        """
+        Retrieve a contact from the database based on the provided ID and user.
+
+        :param id: The ID of the contact to retrieve.
+        :type id: int
+        :param user: The user object representing the owner of the contact.
+        :type user: UserOut
+
+        :return: A ContactOut object representing the retrieved contact, if found.
+                None if no contact is found with the given ID and user.
+        :rtype: ContactOut or None
+        """
         contact = (
-            await self._session.query(Contact)
+            self._session.query(Contact)
             .filter(Contact.user_id == user.id, Contact.id == id)
             .first()
         )
@@ -21,6 +33,18 @@ class ContactRepository(AbstractContactRepository):
         return ContactOut(**contact.to_dict())
 
     async def get_contacts(self, query, user: UserOut) -> list[ContactIn]:
+        """
+        Retrieve contacts from the database based on the provided query parameters and user.
+
+        :param query: A dictionary containing query parameters to filter contacts.
+                        Keys represent fields to filter on, and values represent desired values.
+        :type query: dict
+        :param user: The user object representing the owner of the contacts.
+        :type user: UserOut
+
+        :return: A list of ContactOut objects representing the retrieved contacts.
+        :rtype: list[ContactOut]
+        """
         query = {field: value for field, value in query.items() if value is not None}
 
         if query:
@@ -40,6 +64,17 @@ class ContactRepository(AbstractContactRepository):
         ]
 
     async def create_contact(self, new_contact: ContactIn, user: UserOut) -> ContactOut:
+        """
+        Create a new contact in the database for the given user.
+
+        :param new_contact: The ContactIn object representing the new contact to be created.
+        :type new_contact: ContactIn
+        :param user: The user object representing the owner of the contact.
+        :type user: UserOut
+
+        :return: A ContactOut object representing the created contact.
+        :rtype: ContactOut
+        """
         contact = Contact(**new_contact.model_dump(), user_id=user.id)
         self._session.add(contact)
         self._session.commit()
@@ -47,8 +82,20 @@ class ContactRepository(AbstractContactRepository):
         return ContactOut(**contact.to_dict())
 
     async def delete_contact(self, id: int, user: UserOut) -> ContactOut:
+        """
+        Delete a contact from the database based on the provided ID and user.
+
+        :param id: The ID of the contact to delete.
+        :type id: int
+        :param user: The user object representing the owner of the contact.
+        :type user: UserOut
+
+        :return: A ContactOut object representing the deleted contact, if found and deleted.
+                None if no contact is found with the given ID and user.
+        :rtype: ContactOut or None
+        """
         contact = (
-            await self._session.query(Contact)
+            self._session.query(Contact)
             .filter(Contact.user_id == user.id, Contact.id == id)
             .first()
         )
@@ -61,8 +108,23 @@ class ContactRepository(AbstractContactRepository):
     async def update_contact(
         self, id: int, new_content: ContactIn, user: UserOut
     ) -> ContactOut:
+        """
+        Update an existing contact in the database with new content provided.
+
+        :param id: The ID of the contact to update.
+        :type id: int
+        :param new_content: The ContactIn object representing the new content
+                                    to update the contact with.
+        :type new_content: ContactIn
+        :param user: The user object representing the owner of the contact.
+        :type user: UserOut
+
+        :return: A ContactOut object representing the updated contact.
+                None if no contact is found with the given ID and user.
+        :rtype: ContactOut or None
+        """
         contact = (
-            await self._session.query(Contact)
+            self._session.query(Contact)
             .filter(Contact.user_id == user.id, Contact.id == id)
             .first()
         )
@@ -79,13 +141,23 @@ class ContactRepository(AbstractContactRepository):
         return ContactOut(**contact.to_dict())
 
     async def get_upcoming_birthdays(self, user: UserOut) -> list[ContactIn]:
+        """
+        Retrieve contacts with upcoming birthdays for the given user within the next 7 days.
+
+        :param user: The user object representing the owner of the contacts.
+        :type user: UserOut
+
+        :return: A list of ContactOut objects representing the contacts with upcoming birthdays.
+                None if no contacts have upcoming birthdays within the next 7 days.
+        :rtype: list[ContactOut] or None
+        """
         today = date.today()
         end_date = today + timedelta(days=7)
         contacts_with_birthdays = []
-        contacts = (
-            await self._session.query(Contact).filter(Contact.user_id == user.id).all()
-        )
+        contacts = self._session.query(Contact).filter(Contact.user_id == user.id).all()
+        print(len(contacts))
         if today.year == end_date.year:
+
             for contact in contacts:
                 dt = (
                     date(
