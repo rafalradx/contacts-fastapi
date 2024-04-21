@@ -62,7 +62,7 @@ class ContactRepository(AbstractContactRepository):
         self, id: int, new_content: ContactIn, user: UserOut
     ) -> ContactOut:
         contact = (
-            await self._session.query(Contact)
+            self._session.query(Contact)
             .filter(Contact.user_id == user.id, Contact.id == id)
             .first()
         )
@@ -82,10 +82,10 @@ class ContactRepository(AbstractContactRepository):
         today = date.today()
         end_date = today + timedelta(days=7)
         contacts_with_birthdays = []
-        contacts = (
-            await self._session.query(Contact).filter(Contact.user_id == user.id).all()
-        )
+        contacts = self._session.query(Contact).filter(Contact.user_id == user.id).all()
+        print(len(contacts))
         if today.year == end_date.year:
+
             for contact in contacts:
                 dt = (
                     date(

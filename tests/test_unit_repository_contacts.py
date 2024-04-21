@@ -7,6 +7,7 @@ from src.database.models import User, Contact
 from src.schemas.contacts import ContactIn, ContactOut
 from src.schemas.users import UserIn, UserOut
 from src.repository.contacts import ContactRepository
+from datetime import date, timedelta
 
 
 class TestContacts(unittest.IsolatedAsyncioTestCase):
@@ -31,6 +32,14 @@ class TestContacts(unittest.IsolatedAsyncioTestCase):
             additional_data=None,
         )
         self.contact_out = ContactOut(**self.contact.to_dict())
+        self.contact_in = ContactIn(
+            first_name="Jack",
+            last_name="Black",
+            email="Jack@black.com",
+            phone_number="776667123",
+            birth_date="1978-02-12",
+            additional_data=None,
+        )
 
     async def test_get_contact(self):
 
@@ -47,15 +56,7 @@ class TestContacts(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(result)
 
     async def test_create_contact(self):
-        contact_in = ContactIn(
-            first_name="Jack",
-            last_name="Black",
-            email="Jack@black.com",
-            phone_number="776667123",
-            birth_date="1978-02-12",
-            additional_data=None,
-        )
-        contact_dict = contact_in.model_dump()
+        contact_dict = self.contact_in.model_dump()
         contact_dict["id"] = 666
         contact_mock = MagicMock(ContactOut)
         contact_mock.model_dump.return_value = contact_dict
@@ -63,12 +64,12 @@ class TestContacts(unittest.IsolatedAsyncioTestCase):
         result = await self.contacts_repository.create_contact(
             new_contact=contact_mock, user=self.user
         )
-        self.assertEqual(result.first_name, contact_in.first_name)
-        self.assertEqual(result.last_name, contact_in.last_name)
-        self.assertEqual(result.email, contact_in.email)
-        self.assertEqual(result.phone_number, contact_in.phone_number)
-        self.assertEqual(result.birth_date, contact_in.birth_date)
-        self.assertEqual(result.additional_data, contact_in.additional_data)
+        self.assertEqual(result.first_name, self.contact_in.first_name)
+        self.assertEqual(result.last_name, self.contact_in.last_name)
+        self.assertEqual(result.email, self.contact_in.email)
+        self.assertEqual(result.phone_number, self.contact_in.phone_number)
+        self.assertEqual(result.birth_date, self.contact_in.birth_date)
+        self.assertEqual(result.additional_data, self.contact_in.additional_data)
         self.assertTrue(hasattr(result, "id"))
         self.assertTrue(result.id, self.user.id)
 
@@ -86,37 +87,57 @@ class TestContacts(unittest.IsolatedAsyncioTestCase):
         result = await self.contacts_repository.delete_contact(id=1, user=self.user)
         self.assertIsNone(result)
 
-    # async def test_update_note_found(self):
-    #     body = NoteUpdate(title="test", description="test note", tags=[1, 2], done=True)
-    #     tags = [Tag(id=1, user_id=1), Tag(id=2, user_id=1)]
-    #     note = Note(tags=tags)
-    #     self.session.query().filter().first.return_value = note
-    #     self.session.query().filter().all.return_value = tags
-    #     self.session.commit.return_value = None
-    #     result = await update_note(note_id=1, body=body, user=self.user, db=self.session)
-    #     self.assertEqual(result, note)
+    async def test_update_contact_found(self):
 
-    # async def test_update_note_not_found(self):
-    #     body = NoteUpdate(title="test", description="test note", tags=[1, 2], done=True)
-    #     self.session.query().filter().first.return_value = None
-    #     self.session.commit.return_value = None
-    #     result = await update_note(note_id=1, body=body, user=self.user, db=self.session)
-    #     self.assertIsNone(result)
+        contact_mock = AsyncMock(spec=Contact)
+        contact_mock.to_dict.return_value = self.contact.to_dict()
+        query_mock = self.session.query.return_value
+        query_mock.filter.return_value.first.return_value = contact_mock
+        result = await self.contacts_repository.update_contact(
+            id=1, new_content=contact_mock, user=self.user
+        )
+        self.assertEqual(result, self.contact_out)
 
-    # async def test_update_status_note_found(self):
-    #     body = NoteStatusUpdate(done=True)
-    #     note = Note()
-    #     self.session.query().filter().first.return_value = note
-    #     self.session.commit.return_value = None
-    #     result = await update_status_note(note_id=1, body=body, user=self.user, db=self.session)
-    #     self.assertEqual(result, note)
+    async def test_update_contact_not_found(self):
 
-    # async def test_update_status_note_not_found(self):
-    #     body = NoteStatusUpdate(done=True)
-    #     self.session.query().filter().first.return_value = None
-    #     self.session.commit.return_value = None
-    #     result = await update_status_note(note_id=1, body=body, user=self.user, db=self.session)
-    #     self.assertIsNone(result)
+        contact_mock = AsyncMock(spec=Contact)
+        contact_mock.to_dict.return_value = self.contact.to_dict()
+        query_mock = self.session.query.return_value
+        query_mock.filter.return_value.first.return_value = None
+        result = await self.contacts_repository.update_contact(
+            id=1, new_content=contact_mock, user=self.user
+        )
+        self.assertIsNone(result, self.contact_out)
+
+    async def test_get_upcoming_birthdays_found(self):
+        contact_with_birthday = self.contact
+        today = date.today()
+        birthdate = date(year=today.year - 10, month=today.month, day=today.day)
+        contact_with_birthday.birth_date = birthdate + timedelta(days=2)
+        contact_mock = AsyncMock(spec=Contact)
+        contact_mock.to_dict.return_value = contact_with_birthday.to_dict()
+        contact_mock.birth_date.return_values = contact_with_birthday.birth_date
+        contact_list = [
+            contact_mock,
+            contact_mock,
+            contact_mock,
+        ]
+        print(len(contact_list))
+        query_mock = self.session.query.return_value
+        query_mock.query.return_value.filter.return_value.all = contact_list
+        result = await self.contacts_repository.get_upcoming_birthdays(user=self.user)
+        self.assertEqual(result, contact_list)
+
+    async def test_get_upcoming_birthdays_not_found(self):
+        contact_no_birthday = self.contact
+        contact_no_birthday.birth_date = date.today() - timedelta(days=2)
+        contact_list = [contact_no_birthday, contact_no_birthday, contact_no_birthday]
+        query_mock = self.session.query.return_value
+        query_mock.query.return_value.filter.return_value.all.return_value = (
+            contact_list
+        )
+        result = await self.contacts_repository.get_upcoming_birthdays(user=self.user)
+        self.assertIsNone(result, contact_list)
 
 
 if __name__ == "__main__":
