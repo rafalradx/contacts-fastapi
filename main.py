@@ -3,13 +3,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from src.routes import contacts, auth, users
 import os
+from pathlib import Path
 from dependencies import get_redis_client
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_limiter import FastAPILimiter
 
 app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount(
+    "/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static"
+)
 
 app.include_router(contacts.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
