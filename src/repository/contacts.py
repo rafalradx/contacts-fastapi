@@ -151,7 +151,6 @@ class ContactRepository(AbstractContactRepository):
                 None if no contacts have upcoming birthdays within the next 7 days.
         :rtype: list[ContactOut] or None
         """
-        print("dupa")
         today = date.today()
         end_date = today + timedelta(days=7)
         contacts_with_birthdays = []

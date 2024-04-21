@@ -23,6 +23,7 @@ fastapi-limiter = "*"
 cloudinary = "*"
 pytest = "*"
 httpx = "*"
+pytest-cov = "*"
 
 [dev-packages]
 sphinx = "*"
