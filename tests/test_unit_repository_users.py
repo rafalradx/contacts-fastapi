@@ -30,9 +30,6 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
         result = await self.users_repository.get_user_by_email(email)
         self.assertEqual(result, self.user_out)
 
-    # async def test_create_user(self):
-    #    result = await self.users_repository.create_user(new_user=self.user_in)
-
     async def test_update_token(self):
         user = MagicMock(spec=User)
         result = await self.users_repository.update_token(
